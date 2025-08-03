@@ -1,0 +1,9 @@
+.idea/
+run_analyzer.ps1
+*.log
+__pycache__/
+destination_directory/
+emod_local/
+simulations_local/
+output/
+download/
