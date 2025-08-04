@@ -24,9 +24,9 @@ def set_config_parameters(config, params):
     import emodpy_malaria.malaria_config as malaria_config
     config = malaria_config.set_team_defaults(config, manifest)
     malaria_config.add_species(config, manifest, ["gambiae", "arabiensis", "funestus"])
-    config.parameters.Simulation_Duration = params['sim_years']  * 365
+    config.parameters.Simulation_Duration = params['sim_years'] * 365
 
-    config.parameters.x_Base_Population = params['pop_size']  / 1000
+    config.parameters.x_Base_Population = params['pop_size'] / 1000
     config.parameters.Report_Parasite_Smear_Sensitivity = 1
     config.parameters.Birth_Rate_Dependence = "FIXED_BIRTH_RATE"
     config.parameters.Min_Days_Between_Clinical_Incidents = 14
@@ -66,7 +66,6 @@ def build_demog():
 
 
 def general_sim():
-
     print("Creating EMODTask (from files)...")
     task = EMODTask.from_default2(
         config_path="config.json",
@@ -78,11 +77,10 @@ def general_sim():
         demog_builder=build_demog
     )
 
-    experiment = Experiment.from_task(task, name=params['exp_name'] )
+    experiment = Experiment.from_task(task, name=params['exp_name'])
     experiment.run(wait_until_done=False)
 
-    return(experiment)
-
+    return (experiment)
 
 
 if __name__ == "__main__":
@@ -97,6 +95,6 @@ if __name__ == "__main__":
     container_id = platform.container_id
 
     from helper import write_analyze_local, run_analyze_EMOD_local_with_polling
-    write_analyze_local(manifest, exp_id, exp_name=params['exp_name'])
-    run_analyze_EMOD_local_with_polling(exp_id, container_id)
 
+    write_analyze_local(manifest, exp_id, exp_name=params['exp_name'])
+    run_analyze_EMOD_local_with_polling(container_id=container_id)

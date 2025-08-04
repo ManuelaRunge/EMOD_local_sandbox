@@ -14,20 +14,21 @@ def parse_args():
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(
-        "-name",
-        "--exp_name",
-        type=str,
-        required=False,
-        default=None,
-        help="Name of experiment to store simulation outputs",
-    )
-    parser.add_argument(
         "-id",
         "--exp_id",
         type=str,
         required=False,
         help="Unique ID of simulation experiment",
         default=None
+    )
+
+    parser.add_argument(
+        "-name",
+        "--exp_name",
+        type=str,
+        required=False,
+        default=None,
+        help="Name of experiment to store simulation outputs",
     )
     return parser.parse_args()
 

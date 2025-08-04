@@ -14,15 +14,12 @@ def write_analyze_local(manifest, exp_id, exp_name=None):
         py_command = f"python analyzer.py -id {exp_id}"
         sim_out_dir = os.path.join(manifest.output_directory, exp_id)
     else:
-        py_command = f"python analyzer.py -id {exp_id}   -name {exp_name}"
+        py_command = f"python analyzer.py -id '{exp_id}'   -name '{exp_name}'"
         sim_out_dir = os.path.join(manifest.output_directory, exp_name)
 
-    fname = f'run_analyzer.ps1'
-
-    wdir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-    file_path = Path(os.path.join(wdir, fname))
+    wdir = manifest.ROOT_DIR
+    file_path = Path(os.path.join(wdir, 'run_analyzer.ps1'))
     os.makedirs(sim_out_dir, exist_ok=True)
-    os.makedirs(os.path.join(wdir, 'log'), exist_ok=True)
 
     # Define the content of the PowerShell script
     powershell_content = f"""
@@ -30,7 +27,6 @@ def write_analyze_local(manifest, exp_id, exp_name=None):
     $job_name = "{job_name}"
     $work_dir = "{wdir}"
     $jobdir = "{os.path.join(manifest.job_directory)}"
-    $log_dir = Join-Path $wdir "log"
 
     # Navigate to the subdirectory
     Set-Location -Path "$work_dir"
@@ -70,11 +66,12 @@ def get_container_jobs_status(container_id):
         return -1
 
 
-def run_analyze_EMOD_local_with_polling(exp, container_id, poll_interval=30, timeout=7200):
+def run_analyze_EMOD_local_with_polling( container_id, poll_interval=30, timeout=7200):
     """
     Poll container jobs for running simulations; when all done, run analyzer script.
     """
     print(f"Polling container {container_id} for running simulations...")
+    wdir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 
     elapsed = 0
     while True:
@@ -93,14 +90,21 @@ def run_analyze_EMOD_local_with_polling(exp, container_id, poll_interval=30, tim
         time.sleep(poll_interval)
         elapsed += poll_interval
 
-    script_path = os.path.join(exp.job_directory, 'run_analyze_EMOD.ps1')
+    script_path = os.path.join( wdir, 'run_analyzer.ps1')
     try:
         result = subprocess.run(
             ["powershell", "-ExecutionPolicy", "Bypass", "-File", script_path],
-            capture_output=True,
-            text=True
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding='utf-8',  # ensure proper decoding
+            errors='replace'  # avoid crashing on bad characters
         )
-        print("Analyzer STDOUT:\n", result.stdout)
-        print("Analyzer STDERR:\n", result.stderr)
+
+        stdout = result.stdout or "<no stdout>"
+        stderr = result.stderr or "<no stderr>"
+
+        print("Analyzer STDOUT:\n", stdout)
+        print("Analyzer STDERR:\n", stderr)
+
     except Exception as e:
         print(f"Failed to run analyzer script: {e}")
